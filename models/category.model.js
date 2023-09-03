@@ -1,57 +1,66 @@
-const { DataTypes } = require('sequelize');
+const { Sequelize, DataTypes } = require('sequelize');
 const { sequelize } = require('../db'); // Import your DataTypes instance
 
+// Define the Category model
 const Category = sequelize.define(
-	'category',
+	'Category',
 	{
 		category_id: {
 			type: DataTypes.INTEGER,
-			allowNull: false,
 			primaryKey: true,
 			autoIncrement: true,
 		},
 		fk_lang_id: {
 			type: DataTypes.INTEGER,
+			allowNull: true,
 		},
 		category_name: {
-			type: DataTypes.INTEGER,
-			allowNull: false,
+			type: DataTypes.STRING(100), // Adjust the length as needed
+			allowNull: true,
+			collate: 'utf8mb3_general_ci', // Adjust the collation as needed
 		},
 		category_name_ar: {
-			type: DataTypes.INTEGER,
-			allowNull: false,
+			type: DataTypes.STRING(100), // Adjust the length as needed
+			defaultValue: '', // Default value
+			collate: 'utf8mb3_general_ci', // Adjust the collation as needed
 		},
 		image_path: {
-			type: DataTypes.INTEGER,
-			allowNull: false,
+			type: DataTypes.STRING(100), // Adjust the length as needed
+			allowNull: true,
+			collate: 'utf8mb3_general_ci', // Adjust the collation as needed
 		},
 		sort_order: {
 			type: DataTypes.INTEGER,
+			allowNull: true,
 		},
-		stauts: {
-			type: DataTypes.INTEGER,
-			allowNull: false,
-			defaultValue: 1,
+		status: {
+			type: DataTypes.STRING(10), // Adjust the length as needed
+			defaultValue: '1',
+			comment: '0:disabled, 1:enabled',
 		},
 		active_inactive: {
 			type: DataTypes.ENUM('1', '0'),
+			allowNull: false,
 		},
-		createdAt: {
-			field: 'created_at',
+		created_at: {
 			type: DataTypes.DATE,
+			allowNull: true,
+			defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
 		},
 		date_modeified: {
-			field: 'created_at',
 			type: DataTypes.DATE,
-			defaultValue: DataTypes.NOW,
+			allowNull: false,
+			defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
 		},
 		category_type: {
-			type: DataTypes.STRING,
+			type: DataTypes.STRING(255), // Adjust the length as needed
+			allowNull: true,
 		},
 	},
 	{
-		updatedAt: false,
-		tableName: 'category', // Set the table name if different from the model name
+		tableName: 'category', // Set the table name explicitly if it's different from the model name
+		timestamps: false, // If you don't want Sequelize to manage createdAt and updatedAt columns
+		underscored: true, // Use snake_case for column names
 	}
 );
 
