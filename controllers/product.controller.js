@@ -27,11 +27,23 @@ const getHomePageData = async (req, res, next) => {
 				response.message = 'Language Name is required';
 				response.code = 201;
 			} else {
-				// Slider Code
-				const slider = await sliderService;
-				let product_data = [];
+				promiseArrayList = [
+					sliderService,
+					getAllPopularProductData(fk_lang_id, limit, start),
+					getFeaturedProducts(fk_lang_id, limit, start),
+					getBestSellingProducts(fk_lang_id, limit, start),
+					categoryData(),
+					cartDataCountByUserID(user_id),
+					wishlistDataCountByUserID(user_id),
+					[],
+				];
 				if (all_product != 1) {
-					product_data = await getAllProductData(fk_lang_id, limit, start);
+					promiseArrayList[promiseArrayList.length - 1] = getAllProductData(
+						fk_lang_id,
+						limit,
+						start
+					);
+					// product_data = await getAllProductData(fk_lang_id, limit, start);
 					// for (const product of productData) {
 					// 	const [wishlist_data, cart_data] = await Promise.all([
 					// 		wishlistDataByID(product['product_id'], user_id),
@@ -69,20 +81,16 @@ const getHomePageData = async (req, res, next) => {
 					// 	}
 					// }
 				}
-				const popular = await getAllPopularProductData(
-					fk_lang_id,
-					limit,
-					start
-				);
-				const featured = await getFeaturedProducts(fk_lang_id, limit, start);
-				const best_selling = await getBestSellingProducts(
-					fk_lang_id,
-					limit,
-					start
-				);
-				const category = await categoryData();
-				const cart_count = await cartDataCountByUserID(user_id);
-				const wishlist_count = await wishlistDataCountByUserID(user_id);
+				const [
+					slider,
+					popular,
+					featured,
+					best_selling,
+					category,
+					cart_count,
+					wishlist_count,
+					product_data,
+				] = await Promise.all(promiseArrayList);
 
 				response = {
 					code: 200, // HTTP_OK
