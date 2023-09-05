@@ -30,30 +30,27 @@ const slider = TopBanner.findAll({
 
 async function getAllProductData(fk_lang_id, limit, start) {
 	try {
-		const products = await Product.findAll({
-			include: [
-				{
-					model: Inventory,
-					attributes: ['qty'],
-					where: {
-						used_status: '1',
-					},
-					required: false,
-				},
-			],
-			where: {
-				status: '1',
-				product_status: '1',
-				category_type: {
-					[Sequelize.Op.not]: 'Gift Card',
-				},
+		const query = `
+  SELECT product.*, inventory.qty AS quantity
+  FROM product
+  LEFT JOIN inventory ON inventory.product_id = product.product_id
+  WHERE product.status = '1'
+    AND product.product_status = '1'
+    AND inventory.used_status = '1'
+    AND product.category_type != 'Gift Card'
+  ORDER BY product.product_id DESC
+  ${limit ? 'LIMIT :limit' : ''} OFFSET :offset;
+`;
+
+		const results = await sequelize.query(query, {
+			type: Sequelize.QueryTypes.SELECT,
+			replacements: {
+				limit: limit,
+				offset: start,
 			},
-			order: [['product_id', 'DESC']],
-			limit: limit,
-			offset: start,
 		});
 
-		return products;
+		return results;
 	} catch (error) {
 		throw error;
 	}

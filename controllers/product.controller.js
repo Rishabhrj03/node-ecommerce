@@ -1,3 +1,5 @@
+const { Worker, isMainThread } = require('worker_threads');
+
 const {
 	slider: sliderService,
 	getAllProductData,
@@ -81,7 +83,7 @@ const getHomePageData = async (req, res, next) => {
 					// 	}
 					// }
 				}
-				const [
+				let [
 					slider,
 					popular,
 					featured,
@@ -91,6 +93,68 @@ const getHomePageData = async (req, res, next) => {
 					wishlist_count,
 					product_data,
 				] = await Promise.all(promiseArrayList);
+				if (isMainThread) {
+					let promises = [];
+					// Create a worker for array1
+					const worker1 = new Worker('./utils/arrayOperationsWorker.js', {
+						workerData: { arrayToProcess: popular, user_id },
+					});
+
+					// Create a worker for array2
+					const worker2 = new Worker('./utils/arrayOperationsWorker.js', {
+						workerData: { arrayToProcess: featured, user_id },
+					});
+
+					// Create a worker for array3
+					const worker3 = new Worker('./utils/arrayOperationsWorker.js', {
+						workerData: { arrayToProcess: best_selling, user_id },
+					});
+
+					// Create a worker for array4
+					const worker4 = new Worker('./utils/arrayOperationsWorker.js', {
+						workerData: { arrayToProcess: product_data, user_id },
+					});
+
+					// Promisify the worker threads
+					const worker1Promise = new Promise((resolve) => {
+						worker1.on('message', (result) => {
+							resolve(result);
+						});
+					});
+
+					const worker2Promise = new Promise((resolve) => {
+						worker2.on('message', (result) => {
+							resolve(result);
+						});
+					});
+
+					const worker3Promise = new Promise((resolve) => {
+						worker3.on('message', (result) => {
+							resolve(result);
+						});
+					});
+
+					const worker4Promise = new Promise((resolve) => {
+						worker4.on('message', (result) => {
+							resolve(result);
+						});
+					});
+
+					promises.push(
+						worker1Promise,
+						worker2Promise,
+						worker3Promise,
+						worker4Promise
+					);
+					// promises.push(worker1Promise);
+
+					// Wait for all worker tasks to complete
+					let results = await Promise.all(promises);
+					popular = results[0];
+					featured = results[1];
+					best_selling = results[2];
+					product_data = results[3];
+				}
 
 				response = {
 					code: 200, // HTTP_OK

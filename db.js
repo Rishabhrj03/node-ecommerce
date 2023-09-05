@@ -8,7 +8,6 @@ const {
 	DB_DIALECT: dialect,
 } = process.env;
 
-console.log('datbase', database);
 const sequelize = new Sequelize(database, username, password, {
 	host,
 	dialect,
